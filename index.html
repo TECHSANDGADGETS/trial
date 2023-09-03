@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geolocation Example</title>
+  <style>
+    /* Your CSS styles here */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #location {
+      text-align: center;
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <h1>Geolocation Example</h1>
+  
+  <div id="location">
+    <p>Loading geolocation...</p>
+  </div>
+
+  <script>
+    function showPosition(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      // Display coordinates on the page
+      const locationDiv = document.getElementById("location");
+      locationDiv.innerHTML = `<p>Latitude: ${latitude}</p><p>Longitude: ${longitude}</p>`;
+
+      // Send data to PHP script with location
+      fetch(`?latitude=${latitude}&longitude=${longitude}`)
+        .then(response => response.text())
+        .then(message => {
+          // Display success message
+          locationDiv.innerHTML += `<p>${message}</p>`;
+        })
+        .catch(error => console.error(error));
+    }
+
+    function showError(error) {
+      const locationDiv = document.getElementById("location");
+      locationDiv.innerHTML = `Geolocation error: ${error.message}`;
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        const locationDiv = document.getElementById("location");
+        locationDiv.innerHTML = "Geolocation is not supported by this browser.";
+      }
+    }
+
+    // Call getLocation() to trigger geolocation retrieval
+    getLocation();
+  </script>
+
+  <?php
+  if (isset($_GET['latitude']) && isset($_GET['longitude'])) {
+    $latitude = $_GET['latitude'];
+    $longitude = $_GET['longitude'];
+
+    $data = "Latitude: $latitude\nLongitude: $longitude\nTimestamp: " . date('Y-m-d H:i:s') . "\n\n";
+
+    $file = 'data.txt';
+    file_put_contents($file, $data, FILE_APPEND);
+
+    echo "Location data has been recorded.";
+  }
+  ?>
+</body>
+</html>
